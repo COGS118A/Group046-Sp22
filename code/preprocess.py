@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pydicom
 import h5py
+import cv2
 
 from pathlib import Path
 
@@ -13,7 +14,7 @@ study_label = pd.read_csv((DATASET_ROOT / 'train_study_level.csv'))
 def extract(study_id):
     ds = pydicom.dcmread(
         next(iter((DATASET_ROOT / 'train' / study_id[:-6]).rglob('*.dcm'))))
-    images[study_id[:-6]] = (ds.pixel_array[::2, ::2] * 0.0625).astype('uint8')
+    images[study_id[:-6]] = cv2.resize((ds.pixel_array / 16).astype('uint8'), (500,500))
     return ds.PatientSex
 
 study_label['Sex'] = study_label['id'].apply(extract)
