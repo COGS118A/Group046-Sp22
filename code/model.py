@@ -55,5 +55,14 @@ class baseline(nn.Module):
 def get_model(args):
     if args['model'] == 'baseline':
         model = baseline()
+    elif args['model'] == 'resnet18':
+        model = models.resnet18(num_classes=4)
+        model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    elif args['model'] == 'resnet34':
+        model = models.resnet34(num_classes=4)
+        model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+    elif args['model'] == 'resnet50':
+        model = models.resnet50(num_classes=4)
+        model.conv1 = nn.Conv2d(1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
     
     return model

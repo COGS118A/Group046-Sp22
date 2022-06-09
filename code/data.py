@@ -43,11 +43,13 @@ class ImageDataset(Dataset):
         return len(self.images)
 
 
-def get_dataset(data_path, label_path, transform=None):
-    return ImageDataset(data_path, label_path, transform)
+def get_dataset(data_path, label_path, args=None):
+    return ImageDataset(data_path, label_path, args)
 
 
 def create_dataloaders(train_set, val_set, test_set, args=None):
+    if args == None:
+        return DataLoader(test_set, batch_size=100, shuffle=False, num_workers=0)
     batch_size = args['bz']
     shuffle_data = args['shuffle_data']
     train_dataloader = DataLoader(train_set, batch_size=batch_size, shuffle=shuffle_data, num_workers=0)

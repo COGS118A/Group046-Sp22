@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from model import get_model
+from tqdm import tqdm
 from data import write_to_file
 
 def prepare_model(device, args=None):
@@ -28,6 +29,8 @@ def train_model(model, criterion, optimizer, scheduler, device, dataloaders, arg
     val_loss = []
     train_acc = []
     val_acc = []
+    
+    result_path = args['result']
 
     best_val_loss = 65535
 
@@ -40,7 +43,7 @@ def train_model(model, criterion, optimizer, scheduler, device, dataloaders, arg
         # Train the model
         model.train()
         running_train_loss = 0.0
-        for inputs, targets in train_dataloader:
+        for inputs, targets in tqdm(train_dataloader):
             inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
@@ -57,7 +60,7 @@ def train_model(model, criterion, optimizer, scheduler, device, dataloaders, arg
         total = 0
         correct = 0
         with torch.no_grad():
-            for inputs, targets in train_dataloader:
+            for inputs, targets in tqdm(train_dataloader):
                 inputs, targets = inputs.to(device), targets.to(device)
                 outputs = model(inputs)
                 _, prediction = torch.max(outputs.data, 1)
@@ -92,7 +95,7 @@ def train_model(model, criterion, optimizer, scheduler, device, dataloaders, arg
 
         if val_loss[-1] < best_val_loss:
             best_val_loss = val_loss[-1]
-            torch.save(model.state_dict(), "checkpoint.pt")
+            torch.save(model.state_dict(), f'./{result_path}.pt')
         
         # Adapt learning rate if scheduler is initialized
         if scheduler is not None:
@@ -100,7 +103,7 @@ def train_model(model, criterion, optimizer, scheduler, device, dataloaders, arg
     
     print('Finish training.')
 
-    model.load_state_dict(torch.load("checkpoint.pt"))
+    model.load_state_dict(torch.load(f'./{result_path}.pt'))
 
     # Calculate the loss and accuracy on test set
     running_test_loss = 0.0
@@ -128,6 +131,6 @@ def train_model(model, criterion, optimizer, scheduler, device, dataloaders, arg
     # Save the results for further visualization
     data = {'train_loss': train_loss, 'val_loss': val_loss, 'train_acc': train_acc, 'val_acc': val_acc,
             'test_loss': test_loss, 'test_acc': test_acc}
-    write_to_file('./results.pkl', data)
+    write_to_file(f'./{result_path}.pkl', data)
 
     return model # return the model with weight selected by best performance 
